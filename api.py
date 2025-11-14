@@ -3,7 +3,7 @@ Memory Mori Main API
 Clean interface for intelligent memory storage and retrieval
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any, cast
 from datetime import datetime
 
 from config import Memory, MemoryConfig
@@ -162,7 +162,7 @@ class MemoryMori:
 
         semantic_results = self.hybrid_search.search_semantic(
             query_embedding,
-            vector_results,
+            cast(Dict[str, Any], vector_results),
             top_k=max_items * self.config.top_k_multiplier
         )
 
@@ -208,7 +208,7 @@ class MemoryMori:
             try:
                 import json
                 entities = json.loads(entities_json)
-            except:
+            except Exception:
                 entities = []
 
             # Parse timestamp
@@ -217,7 +217,7 @@ class MemoryMori:
             if timestamp_str:
                 try:
                     timestamp = datetime.fromisoformat(timestamp_str)
-                except:
+                except Exception:
                     pass
 
             memory = Memory(
@@ -323,24 +323,29 @@ class MemoryMori:
         all_data = self.vector_store.get_all()
         ids_to_delete = []
 
+        # Ensure metadatas exists
+        metadatas = all_data.get('metadatas')
+        if not metadatas:
+            return 0
+
         for i, doc_id in enumerate(all_data['ids']):
-            metadata = all_data['metadatas'][i] if all_data.get('metadatas') else {}
+            metadata = metadatas[i] if i < len(metadatas) else {}
 
             # Parse timestamps
             created_at_str = metadata.get('created_at')
             last_accessed_str = metadata.get('last_accessed')
 
-            if not created_at_str:
+            if not created_at_str or not isinstance(created_at_str, str):
                 continue
 
             try:
                 created_at = datetime.fromisoformat(created_at_str)
-                last_accessed = datetime.fromisoformat(last_accessed_str) if last_accessed_str else None
+                last_accessed = datetime.fromisoformat(last_accessed_str) if last_accessed_str and isinstance(last_accessed_str, str) else None
 
                 # Check if should be cleaned up
                 if self.decay_scorer.should_cleanup(created_at, last_accessed, threshold):
                     ids_to_delete.append(doc_id)
-            except:
+            except Exception:
                 continue
 
         # Delete stale memories

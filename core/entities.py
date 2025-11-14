@@ -6,7 +6,8 @@ Uses spaCy for Named Entity Recognition (NER)
 import spacy
 import json
 import logging
-from typing import List, Dict, Literal
+from typing import List, Dict, Literal, cast
+from spacy.pipeline import EntityRuler
 from .device import check_spacy_gpu_support
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,9 @@ class EntityExtractor:
         if device in ["auto", "cuda"]:
             if check_spacy_gpu_support():
                 try:
-                    spacy.prefer_gpu()
+                    # Import prefer_gpu from spacy.util
+                    from spacy.util import prefer_gpu  # type: ignore
+                    prefer_gpu()
                     self.using_gpu = True
                     logger.info("spaCy using GPU for entity extraction")
                 except Exception as e:
@@ -130,7 +133,7 @@ class EntityExtractor:
 
         # Add entity ruler with custom patterns
         if "entity_ruler" not in self.nlp.pipe_names:
-            ruler = self.nlp.add_pipe("entity_ruler", before="ner")
+            ruler = cast(EntityRuler, self.nlp.add_pipe("entity_ruler", before="ner"))
             ruler.add_patterns(self.TECH_PATTERNS)
 
     def extract(self, text: str) -> List[Dict]:

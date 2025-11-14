@@ -46,3 +46,9 @@ conversation_logs/
 
 # Editor
 .claude/
+
+# Package distribution / build
+dist/
+build/
+*.egg-info/
+.eggs/

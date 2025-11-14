@@ -3,10 +3,11 @@ Vector Store Abstraction
 Provides a clean interface to ChromaDB for vector storage and retrieval
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any, cast
 import numpy as np
 import chromadb
 from chromadb.config import Settings
+from chromadb.api.types import QueryResult, GetResult, Metadata
 
 
 class VectorStore:
@@ -47,7 +48,7 @@ class VectorStore:
         ids: List[str],
         texts: List[str],
         embeddings: List[np.ndarray],
-        metadatas: Optional[List[Dict]] = None
+        metadatas: Optional[List[Dict[str, Any]]] = None
     ):
         """
         Add documents to the vector store.
@@ -68,14 +69,14 @@ class VectorStore:
             ids=ids,
             documents=texts,
             embeddings=embeddings_list,
-            metadatas=metadatas
+            metadatas=cast(List[Metadata], metadatas)
         )
 
     def search(
         self,
         query_embedding: np.ndarray,
         top_k: int = 10
-    ) -> Dict:
+    ) -> QueryResult:
         """
         Search for similar documents using vector similarity.
 
@@ -84,7 +85,7 @@ class VectorStore:
             top_k: Number of results to return
 
         Returns:
-            Dictionary with ids, documents, distances, and metadatas
+            QueryResult with ids, documents, distances, and metadatas
         """
         # Convert numpy array to list for ChromaDB
         query_list = query_embedding.tolist() if isinstance(query_embedding, np.ndarray) else query_embedding
@@ -99,7 +100,7 @@ class VectorStore:
     def update_metadata(
         self,
         ids: List[str],
-        metadatas: List[Dict]
+        metadatas: List[Dict[str, Any]]
     ):
         """
         Update metadata for documents.
@@ -110,7 +111,7 @@ class VectorStore:
         """
         self.collection.update(
             ids=ids,
-            metadatas=metadatas
+            metadatas=cast(List[Metadata], metadatas)
         )
 
     def delete(self, ids: List[str]):
@@ -122,12 +123,12 @@ class VectorStore:
         """
         self.collection.delete(ids=ids)
 
-    def get_all(self) -> Dict:
+    def get_all(self) -> GetResult:
         """
         Get all documents in the collection.
 
         Returns:
-            Dictionary with all documents and metadata
+            GetResult with all documents and metadata
         """
         return self.collection.get(include=['documents', 'metadatas', 'embeddings'])
 

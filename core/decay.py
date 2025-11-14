@@ -4,7 +4,7 @@ Implements time-based decay for search results
 """
 
 import math
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 
@@ -18,14 +18,14 @@ class DecayScorer:
 
     # Preset decay rates
     DECAY_RATES = {
-        'very_slow': 0.01,   # Items stay relevant for ~100 days
-        'slow': 0.05,        # Items stay relevant for ~20 days
-        'medium': 0.1,       # Items stay relevant for ~10 days
-        'fast': 0.2,         # Items stay relevant for ~5 days
-        'very_fast': 0.5,    # Items stay relevant for ~2 days
+        "very_slow": 0.01,  # Items stay relevant for ~100 days
+        "slow": 0.05,  # Items stay relevant for ~20 days
+        "medium": 0.1,  # Items stay relevant for ~10 days
+        "fast": 0.2,  # Items stay relevant for ~5 days
+        "very_fast": 0.5,  # Items stay relevant for ~2 days
     }
 
-    def __init__(self, lambda_value: float = 0.05, time_mode: str = 'combined'):
+    def __init__(self, lambda_value: float = 0.05, time_mode: str = "combined"):
         """
         Initialize decay scorer.
 
@@ -44,7 +44,7 @@ class DecayScorer:
         self.access_weight = 0.7
 
     @classmethod
-    def from_preset(cls, preset: str = 'slow', time_mode: str = 'combined'):
+    def from_preset(cls, preset: str = "slow", time_mode: str = "combined"):
         """
         Create decay scorer with preset decay rate.
 
@@ -62,7 +62,7 @@ class DecayScorer:
         self,
         created_at: datetime,
         last_accessed: Optional[datetime] = None,
-        current_time: Optional[datetime] = None
+        current_time: Optional[datetime] = None,
     ) -> float:
         """
         Calculate time factor based on timestamps.
@@ -80,16 +80,16 @@ class DecayScorer:
 
         days_since_creation = (current_time - created_at).total_seconds() / 86400.0
 
-        if self.time_mode == 'creation':
+        if self.time_mode == "creation":
             return days_since_creation
 
-        elif self.time_mode == 'access':
+        elif self.time_mode == "access":
             if last_accessed is None:
                 return days_since_creation
             days_since_access = (current_time - last_accessed).total_seconds() / 86400.0
             return days_since_access
 
-        elif self.time_mode == 'combined':
+        elif self.time_mode == "combined":
             if last_accessed is None:
                 return days_since_creation
 
@@ -97,8 +97,8 @@ class DecayScorer:
 
             # Weighted average
             time_factor = (
-                self.creation_weight * days_since_creation +
-                self.access_weight * days_since_access
+                self.creation_weight * days_since_creation
+                + self.access_weight * days_since_access
             )
             return time_factor
 
@@ -110,7 +110,7 @@ class DecayScorer:
         base_score: float,
         created_at: datetime,
         last_accessed: Optional[datetime] = None,
-        current_time: Optional[datetime] = None
+        current_time: Optional[datetime] = None,
     ) -> Tuple[float, float]:
         """
         Calculate decayed score.
@@ -124,7 +124,9 @@ class DecayScorer:
         Returns:
             Tuple of (decayed_score, decay_multiplier)
         """
-        time_factor = self.calculate_time_factor(created_at, last_accessed, current_time)
+        time_factor = self.calculate_time_factor(
+            created_at, last_accessed, current_time
+        )
 
         # Exponential decay: e^(-λ * t)
         decay_multiplier = math.exp(-self.lambda_value * time_factor)
@@ -136,8 +138,8 @@ class DecayScorer:
     def apply_decay(
         self,
         results: List[Dict],
-        score_key: str = 'final_score',
-        current_time: Optional[datetime] = None
+        score_key: str = "final_score",
+        current_time: Optional[datetime] = None,
     ) -> List[Dict]:
         """
         Apply decay to a list of search results.
@@ -155,18 +157,20 @@ class DecayScorer:
 
         for result in results:
             # Get timestamps from metadata
-            metadata = result.get('metadata', {})
+            metadata = result.get("metadata", {})
 
             # Parse timestamps
             created_at = self._parse_timestamp(
-                metadata.get('created_at'),
-                default=current_time
+                metadata.get("created_at"), default=current_time
             )
 
             last_accessed = self._parse_timestamp(
-                metadata.get('last_accessed'),
-                default=None
+                metadata.get("last_accessed"), default=None
             )
+
+            # Ensure created_at is not None (should always have a value due to default)
+            if created_at is None:
+                created_at = current_time
 
             # Calculate decay
             base_score = result.get(score_key, 0.0)
@@ -175,12 +179,12 @@ class DecayScorer:
             )
 
             # Update result
-            result['decayed_score'] = decayed_score
-            result['decay_multiplier'] = decay_multiplier
-            result['base_score'] = base_score
+            result["decayed_score"] = decayed_score
+            result["decay_multiplier"] = decay_multiplier
+            result["base_score"] = base_score
 
         # Re-sort by decayed score
-        results.sort(key=lambda x: x.get('decayed_score', 0), reverse=True)
+        results.sort(key=lambda x: x.get("decayed_score", 0), reverse=True)
 
         return results
 
@@ -189,7 +193,7 @@ class DecayScorer:
         created_at: datetime,
         last_accessed: Optional[datetime] = None,
         threshold: float = 0.01,
-        current_time: Optional[datetime] = None
+        current_time: Optional[datetime] = None,
     ) -> bool:
         """
         Determine if item should be cleaned up based on decay.
@@ -229,7 +233,7 @@ class DecayScorer:
         if isinstance(value, str):
             try:
                 return datetime.fromisoformat(value)
-            except:
+            except Exception:
                 return default
 
         return default

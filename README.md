@@ -1,6 +1,18 @@
 # Memory Mori
 
-An intelligent memory system combining hybrid search, entity extraction, profile learning, and time-based decay for context-aware information retrieval and AI conversations.
+**Persistent memory for LLMs** - Give your AI conversations long-term memory with intelligent context retrieval.
+
+Memory Mori is a Python library that provides persistent, searchable memory for Large Language Models (LLMs). It remembers past conversations, user preferences, and important context, then intelligently retrieves relevant information when needed.
+
+Perfect for building chatbots, AI assistants, and conversational agents that need to remember user interactions across sessions.
+
+**Key capabilities:**
+- 🧠 **Persistent Memory**: Store and retrieve conversation history across sessions
+- 🔍 **Smart Retrieval**: Hybrid search combines semantic understanding with keyword matching
+- 👤 **User Profiles**: Automatically learns and remembers user preferences, skills, and context
+- ⏰ **Time Awareness**: Recent memories are prioritized, old ones fade naturally
+- 🏷️ **Entity Tracking**: Remembers people, organizations, tools, and technologies mentioned
+- 🚀 **Easy Integration**: Works with OpenAI, Claude, Ollama, and any LLM
 
 ## Features
 
@@ -37,21 +49,19 @@ An intelligent memory system combining hybrid search, entity extraction, profile
 ## Installation
 
 ```bash
-# Install dependencies
-pip install chromadb sentence-transformers spacy rank_bm25 openai
+# Install Memory Mori from PyPI
+pip install memory-mori
 
-# Download spaCy model (large model for best accuracy)
+# Download spaCy language model (required)
 python -m spacy download en_core_web_lg
-
-# Optional: Use medium model for faster loading (less accurate)
-# python -m spacy download en_core_web_md
 ```
+
+That's it! Memory Mori will automatically install all dependencies (ChromaDB, sentence-transformers, spaCy, etc.).
 
 ## Quick Start
 
 ```python
-from api import MemoryMori
-from config import MemoryConfig
+from memory_mori import MemoryMori, MemoryConfig
 
 # Initialize with defaults (recommended)
 mm = MemoryMori()
@@ -74,7 +84,7 @@ print(context)
 ## Configuration
 
 ```python
-from config import MemoryConfig
+from memory_mori import MemoryConfig
 
 # Custom configuration
 config = MemoryConfig(
@@ -217,10 +227,6 @@ Based on benchmarks:
 - **Retrieval**: ~25ms per query (40 queries/sec)
 - **Context Generation**: ~22ms per query
 
-**Evaluation Results:**
-- Mean F1: 0.758
-- MAP (Mean Average Precision): 0.958
-- Entity F1: 0.647
 
 ## Advanced Features
 
@@ -263,13 +269,6 @@ config = MemoryConfig(
 )
 ```
 
-## Use Cases
-
-1. **Personal AI Assistant**: Remember user preferences, habits, and context
-2. **Technical Support Bot**: Track user's tech stack and previous issues
-3. **Learning Companion**: Remember what user has learned, provide progressive lessons
-4. **Project Assistant**: Track project details, decisions, and progress
-5. **Research Tool**: Store and retrieve research notes with smart ranking
 
 ## Requirements
 
@@ -278,7 +277,6 @@ config = MemoryConfig(
 - sentence-transformers
 - spacy (with en_core_web_md)
 - rank_bm25
-- openai (for OpenAI integration)
 
 ## Contributing
 

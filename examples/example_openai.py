@@ -6,7 +6,9 @@ Shows basic integration of Memory Mori with OpenAI's API
 import sys
 sys.path.append('..')
 
+from typing import List
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from api import MemoryMori
 from config import MemoryConfig
 
@@ -36,7 +38,7 @@ def chat(user_message: str, model: str = "gpt-4o-mini") -> str:
     context = mm.get_context(user_message, max_items=3)
 
     # Build messages
-    messages = [
+    messages: List[ChatCompletionMessageParam] = [
         {
             "role": "system",
             "content": "You are a helpful assistant with access to conversation history."
@@ -62,7 +64,7 @@ def chat(user_message: str, model: str = "gpt-4o-mini") -> str:
         messages=messages
     )
 
-    assistant_message = response.choices[0].message.content
+    assistant_message = response.choices[0].message.content or ""
 
     # Store conversation in memory
     mm.store(f"User: {user_message}\nAssistant: {assistant_message}")
