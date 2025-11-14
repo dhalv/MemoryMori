@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+bin/
+include/
+lib/
+lib64
+pyvenv.cfg
+share/
+
+# ChromaDB
+chroma_db/
+
+# Test outputs
+tests/*.txt
+tests/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test/Demo data
+conversation_logs/
+*_data/
+*_example_data/
+
+# Editor
+.claude/
