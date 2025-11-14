@@ -60,26 +60,38 @@ That's it! Memory Mori will automatically install all dependencies (ChromaDB, se
 
 ## Quick Start
 
-```python
-from memory_mori import MemoryMori, MemoryConfig
+Here's a minimal example integrating Memory Mori with OpenAI:
 
-# Initialize with defaults (recommended)
+```python
+from openai import OpenAI
+from memory_mori import MemoryMori
+
+# Initialize
+client = OpenAI(api_key)
 mm = MemoryMori()
 
-# Store information
-mm.store("I'm working on a Python project using Django and PostgreSQL")
-mm.store("Our deployment uses Docker containers on AWS")
+def chat(user_input):
+    # Get relevant context from past conversations
+    context = mm.get_context(user_input, max_items=3)
 
-# Retrieve relevant memories
-results = mm.retrieve("Tell me about my tech stack")
+    # Create prompt with context
+    messages = [{"role": "system", "content": f"Context: {context}"}] if context else []
+    messages.append({"role": "user", "content": user_input})
 
-for result in results:
-    print(f"[{result.score:.2f}] {result.text}")
+    # Get AI response
+    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
+    ai_message = response.choices[0].message.content
 
-# Get formatted context for AI prompts
-context = mm.get_context("What's my deployment setup?")
-print(context)
+    # Store conversation for future context
+    mm.store(f"User: {user_input}\nAssistant: {ai_message}")
+
+    return ai_message
+
+# Use it
+print(chat("I'm building a chatbot with Python"))
+print(chat("What language am I using?"))  # It remembers!
 ```
+
 
 ## Configuration
 
